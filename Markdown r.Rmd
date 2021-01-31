@@ -1,0 +1,123 @@
+---
+title: "Masterarbeit_Eduardus_Adicipta"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## import all related library
+```{r}
+library(ggpubr)
+library(dplyr)
+library(rlang)
+library(rstatix)
+```
+
+## import csv.data and change variable for rva_breite
+```{r}
+Analyse<- read.csv("C:/Users/EAdicipta/Desktop/uni praktikum/Beuth/Masterarbeit/Data_final/Ausgabe_nur_Berlin.csv",header=TRUE, sep=";",quote="\"", stringsAsFactors=FALSE)
+show(Analyse)
+rva_breite <- Analyse$RVA.Breite
+rva_breite <- as.numeric(rva_breite)
+```
+## summary descriptive statistic
+```{r}
+summary(Analyse$ï..rating)
+```
+## hypothesis 1
+```{r}
+## one-sample median test for first hypothesis
+res <- wilcox.test(Analyse$ï..rating, mu = 1.5, alternative = "greater")
+res
+```
+```{r}
+## one-Sample T-Test for first hypothesis
+res <- t.test(Analyse$ï..rating, mu = 1.5,
+              alternative = "greater",exact= NULL)
+res
+```
+## hypothesis 2
+```{r}
+## order the userGroup character
+Analyse$userGroup <- ordered(Analyse$userGroup,
+                         levels = c("potentialBicycle","pedestrian","bicycle","car" ))
+
+## summary descriptive statistic for userGroup
+group_by(Analyse, userGroup) %>%
+  summarise(
+    count = n(),
+    mean = mean(ï..rating, na.rm = TRUE),
+    sd = sd(ï..rating, na.rm = TRUE),
+    median = median(ï..rating, na.rm = TRUE),
+    IQR = IQR(ï..rating, na.rm = TRUE)
+  )
+```
+```{r}
+## kruskal wallis test for usergroup
+    kruskal.test(userGroup ~ ï..rating, data = Analyse)
+```
+```{r}
+## calculate pairwise comparisons between usergroup by Benjamini & Hochberg (1995)
+pairwise.wilcox.test(Analyse$ï..rating, Analyse$userGroup,
+                 p.adjust.method = "BH")
+```
+## hypothesis 3
+```{r}
+## order the experiment character
+Analyse$Experiment <- ordered(Analyse$Experiment,
+                         levels = c("SE", "CP", "MS"))
+
+## summary descriptive statistic for experiment
+group_by(Analyse, Experiment) %>%
+  summarise(
+    count = n(),
+    mean = mean(ï..rating, na.rm = TRUE),
+    sd = sd(ï..rating, na.rm = TRUE),
+    median = median(ï..rating, na.rm = TRUE),
+    IQR = IQR(ï..rating, na.rm = TRUE)
+  )
+```
+```{r}
+## kruskal wallis test for experiment
+kruskal.test(Experiment ~ ï..rating, data = Analyse)
+```
+```{r}
+## calculate pairwise comparisons between experiment by Benjamini & Hochberg (1995)
+pairwise.wilcox.test(Analyse$ï..rating, Analyse$Experiment,
+                 p.adjust.method = "BH")
+```
+## hypothesis 4
+```{r}
+## define separated bike lanes
+Analyse$Trennungen_MS <- if_else(Analyse$Experiment=="MS" & Analyse$Tr_li.baulTrennung %in% c("Sperrpfosten-hoch", "Sperrpfosten-niedrig", "Blumenkasten"), "geschützte Radfahrstreifen", if_else (Analyse$Experiment=="MS" & Analyse$Tr_li.baulTrennung %in% c("-", "0") & Analyse$Tr_li.Markierung %in% c("Doppellinie", "durchgezogen", "SperrflÃ¤che"), "Radfahrstreifen", if_else(Analyse$Experiment=="MS" & Analyse$Tr_li.Markierung %in% c("unterbrochen"), "Schutzstreifen",if_else(Analyse$Experiment=="MS","gar kein Radweg",""))))
+```
+
+```{r}
+## order the Trennungen_MS character
+Analyse$Trennungen_MS <- ordered(Analyse$Trennungen_MS,
+                         levels = c("gar kein Radweg", "Schutzstreifen","Radfahrstreifen", "geschützte Radfahrstreifen"))
+
+## summary descriptive statistic for Trennungen_MS
+group_by(Analyse, Trennungen_MS) %>%
+  summarise(
+    count = n(),
+    mean = mean(ï..rating, na.rm = TRUE),
+    sd = sd(ï..rating, na.rm = TRUE),
+    median = median(ï..rating, na.rm = TRUE),
+    IQR = IQR(ï..rating, na.rm = TRUE)
+  )
+```
+```{r}
+## kruskal wallis test for Trennungen_MS
+kruskal.test(Trennungen_MS ~ ï..rating, data = Analyse)
+```
+```{r}
+## calculate pairwise comparisons between Trennnungen_MS by Benjamini & Hochberg (1995)
+pairwise.wilcox.test(Analyse$ï..rating, Analyse$Trennungen_MS,
+                 p.adjust.method = "BH")
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

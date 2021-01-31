@@ -1,0 +1,124 @@
+---
+title: "Masterarbeit_Eduardus_Adicipta"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+## import all related libraries
+library(ggpubr)
+library(dplyr)
+library(rlang)
+library(rstatix)
+```
+
+
+```{r}
+## import csv.data. The path to Ausgabe_nur_Berlin.csv needs to be adjusted.
+Analyse<- read.csv("C:/Users/EAdicipta/Desktop/uni praktikum/Beuth/Masterarbeit/Data_final/Ausgabe_nur_Berlin.csv",header=TRUE, sep=";",quote="\"", stringsAsFactors=FALSE)
+```
+
+```{r}
+## summary descriptive statistic
+summary(Analyse$rating)
+```
+## Hypothesis 1
+```{r}
+## one-Sample median test for first hypothesis
+res_median <- wilcox.test(Analyse$rating, mu = 1.5, alternative = "greater")
+res_median
+```
+```{r}
+## one-Sample t-Test for first hypothesis.
+res_mean <- t.test(Analyse$rating, mu = 1.5,
+              alternative = "greater",exact= NULL)
+res_mean
+```
+## Hypothesis 2
+```{r}
+## order the userGroup character
+Analyse$userGroup <- ordered(Analyse$userGroup,
+                         levels = c("bicycle","car","pedestrian","potentialBicycle"))
+
+## summary descriptive statistic for userGroup
+group_by(Analyse, userGroup) %>%
+  summarise(
+    count = n(),
+    mean = mean(rating, na.rm = TRUE),
+    sd = sd(rating, na.rm = TRUE),
+    median = median(rating, na.rm = TRUE),
+  )
+```
+```{r}
+## kruskal wallis test for userGroup
+    kruskal.test(userGroup ~ rating, data = Analyse)
+```
+```{r}
+## calculate pairwise comparisons between UserGroup by Benjamini & Hochberg (1995) to control the false discovery rate, the expected proportion of false discoveries amongst the rejected hypotheses
+pairwise.wilcox.test(Analyse$rating, Analyse$userGroup,
+                 p.adjust.method = "BH")
+```
+## Hypothesis 3
+```{r}
+## order the Experiment character
+Analyse$Experiment <- ordered(Analyse$Experiment,
+                         levels = c("SE","MS","CP"))
+
+## summary descriptive statistic for Experiment
+group_by(Analyse, Experiment) %>%
+  summarise(
+    count = n(),
+    mean = mean(rating, na.rm = TRUE),
+    sd = sd(rating, na.rm = TRUE),
+    median = median(rating, na.rm = TRUE),
+  )
+```
+```{r}
+## kruskal wallis test for Experiment
+kruskal.test(Experiment ~ rating, data = Analyse)
+```
+```{r}
+## calculate pairwise comparisons between Experiment by Benjamini & Hochberg (1995) to control the false discovery rate, the expected proportion of false discoveries amongst the rejected hypotheses
+pairwise.wilcox.test(Analyse$rating, Analyse$Experiment,
+                 p.adjust.method = "BH")
+```
+## Hypothesis 4
+```{r}
+## define separated bike lanes
+## protected bike lane means if the main street is physically separated with high or low barrier posts or flower boxes
+## designated bike lane means if the main street is not physically separated but marked with double solid line, solid line, buffered bike line
+## striped bike lane means if the main street is marked with broken white line 
+## no bicycle lane means if the main street is not physically separated and does not have designated bike lane  
+Analyse$Trennungen_MS <- if_else(Analyse$Experiment=="MS" & Analyse$Tr_li.baulTrennung %in% c("Sperrpfosten-hoch", "Sperrpfosten-niedrig", "Blumenkasten"), "geschützte Radfahrstreifen", if_else (Analyse$Experiment=="MS" & Analyse$Tr_li.baulTrennung %in% c("-", "0") & Analyse$Tr_li.Markierung %in% c("Doppellinie", "durchgezogen", "SperrflÃ¤che"), "Radfahrstreifen", if_else(Analyse$Experiment=="MS" & Analyse$Tr_li.Markierung %in% c("unterbrochen"), "Schutzstreifen",if_else(Analyse$Experiment=="MS","gar kein Radweg",""))))
+```
+
+```{r}
+## order the Trennungen_MS character
+Analyse$Trennungen_MS <- ordered(Analyse$Trennungen_MS,
+                         levels = c("gar kein Radweg","Schutzstreifen","Radfahrstreifen","geschützte Radfahrstreifen"))
+
+## summary descriptive statistic for Trennungen_MS
+group_by(Analyse, Trennungen_MS) %>%
+  summarise(
+    count = n(),
+    mean = mean(rating, na.rm = TRUE),
+    sd = sd(rating, na.rm = TRUE),
+    median = median(rating, na.rm = TRUE),
+  )
+```
+```{r}
+## kruskal wallis test for Trennungen_MS
+kruskal.test(Trennungen_MS ~ rating, data = Analyse)
+```
+```{r}
+## calculate pairwise comparisons between Trennnungen_MS by Benjamini & Hochberg (1995) to control the false discovery rate, the expected proportion of false discoveries amongst the rejected hypotheses
+pairwise.wilcox.test(Analyse$rating, Analyse$Trennungen_MS,
+                 p.adjust.method = "BH")
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
