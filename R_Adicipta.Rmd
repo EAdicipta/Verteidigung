@@ -28,7 +28,7 @@ Analyse<- read.csv("C:/Users/EAdicipta/Desktop/uni praktikum/Beuth/Masterarbeit/
 ## summary descriptive statistic
 summary(Analyse$rating)
 ```
-## Hypothesis 1
+## Hypothesis 1: Der Berliner Straßenverkehr wird als relativ sicher empfunden.
 ```{r}
 ## one-Sample median test for first hypothesis
 res_median <- wilcox.test(Analyse$rating, mu = 1.5, alternative = "greater")
@@ -40,7 +40,7 @@ res_mean <- t.test(Analyse$rating, mu = 1.5,
               alternative = "greater",exact= NULL)
 res_mean
 ```
-## Hypothesis 2
+## Hypothesis 2: Die potentiellen Radfahrenden finden den Berliner Straßenverkehr genauso sicher wie Radfahrende in allen Verkehrssituationen.
 ```{r}
 ## order the userGroup character
 Analyse$userGroup <- ordered(Analyse$userGroup,
@@ -64,7 +64,7 @@ group_by(Analyse, userGroup) %>%
 pairwise.wilcox.test(Analyse$rating, Analyse$userGroup,
                  p.adjust.method = "BH")
 ```
-## Hypothesis 3
+## Hypothesis 3: Radverkehrsanlagen im Seitenraum werden sicherer empfunden als Radverkehrsanlagen in Hauptverkehrsstraßen und Nebenstraßen. 
 ```{r}
 ## order the Experiment character
 Analyse$Experiment <- ordered(Analyse$Experiment,
@@ -88,7 +88,7 @@ kruskal.test(Experiment ~ rating, data = Analyse)
 pairwise.wilcox.test(Analyse$rating, Analyse$Experiment,
                  p.adjust.method = "BH")
 ```
-## Hypothesis 4
+## Hypothesis 4: Die Radwege mit geschützten Radfahrstreifen und die Existenz einer Radverkehrsanlage steigert das Sicherheitsempfinden aller Verkehrsteilnehmer*innen in Hauptstraßen.
 ```{r}
 ## define separated bike lanes
 ## protected bike lane means if the main street is physically separated with high or low barrier posts or flower boxes
